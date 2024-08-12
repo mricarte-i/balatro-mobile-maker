@@ -1,0 +1,96 @@
+# Based on 
+# https://github.com/kylefmohr/balatro-mobile-maker/blob/main/.github/workflows/build.yml
+
+name: Build and Release Binaries
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build Windows x64
+        run: dotnet publish -c Release -o publish/win-x64 -r win-x64 -p:PublishSingleFile=true --self-contained true
+
+      - name: Build macOS x64
+        run: dotnet publish -c Release -o publish/osx-x64 -r osx-x64 -p:PublishSingleFile=true --self-contained true
+
+      - name: Build macOS arm64
+        run: dotnet publish -c Release -o publish/osx-arm64 -r osx-arm64 -p:PublishSingleFile=true --self-contained true
+
+      - name: Build Linux x64
+        run: dotnet publish -c Release -o publish/linux-x64 -r linux-x64 -p:PublishSingleFile=true --self-contained true
+
+      - name: Build Linux arm64
+        run: dotnet publish -c Release -o publish/linux-arm64 -r linux-arm64 -p:PublishSingleFile=true --self-contained true
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Use the provided version number
+          tag_name: v${{ github.event.inputs.version }}
+
+      - name: Upload Windows x64 binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./publish/win-x64/balatro-mobile-maker.exe
+          asset_name: balatro-mobile-maker-win-x64.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload macOS x64 binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./publish/osx-x64/balatro-mobile-maker
+          asset_name: balatro-mobile-maker-osx-x64
+          asset_content_type: application/octet-stream
+
+      - name: Upload macOS arm64 binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./publish/osx-arm64/balatro-mobile-maker
+          asset_name: balatro-mobile-maker-osx-arm64
+          asset_content_type: application/octet-stream
+
+      - name: Upload Linux x64 binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./publish/linux-x64/balatro-mobile-maker
+          asset_name: balatro-mobile-maker-linux-x64
+          asset_content_type: application/octet-stream
+
+      - name: Upload Linux arm64 binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./publish/linux-arm64/balatro-mobile-maker
+          asset_name: balatro-mobile-maker-linux-arm64
+          asset_content_type: application/octet-stream
