@@ -1,13 +1,18 @@
-# Based on 
+# Based on
 # https://github.com/kylefmohr/balatro-mobile-maker/blob/main/.github/workflows/build.yml
 
 name: Build and Release Binaries
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+#  push:
+#    branches: [ "main" ]
+#  pull_request:
+#    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number'
+        required: true
 
 jobs:
   build-and-release:
